@@ -21,7 +21,7 @@ package Persons
 import "github.com/gocraft/dbr"
 
 var fieldsNames = []string{"PersonID", "LastName", "FirstName", "Address", "City"}
-var auto_increment_filed string = "PersonID"
+var auto_increment_field string = "PersonID"
 
 type Persons struct {
 	PersonID  int64          `db:"PersonID"`
@@ -49,7 +49,7 @@ func FieldsNames() []string {
 func FieldsNamesWithOutAI() []string {
 	var slice []string
 	for _, iterator := range fieldsNames {
-		if iterator == auto_increment_filed {
+		if iterator == auto_increment_field {
 			continue
 		}
 		slice = append(slice, iterator)
