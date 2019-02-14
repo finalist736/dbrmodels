@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 )
 
 func DoCreate(verbose bool) {
@@ -37,7 +37,7 @@ func DoCreate(verbose bool) {
 		if p.DBName == "" {
 			p.DBName = "test"
 		}
-		fmt.Printf("\nProject: %s\nDBName: %s\nHost: %s\nPort: %s\nUser: %s\nPass: %s\nPath: %s\n", 
+		fmt.Printf("\nProject: %s\nDBName: %s\nHost: %s\nPort: %s\nUser: %s\nPass: %s\nPath: %s\n",
 			p.Name, p.DBName, p.DBHost, p.DBPort, p.DBUser, p.DBPass, p.Path)
 		var yesno string
 		fmt.Printf("All correct:[Y/n] ")

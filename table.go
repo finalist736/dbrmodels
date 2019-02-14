@@ -93,7 +93,7 @@ func CreateTableModel(path, table, projectname string, db *sql.DB, verbose bool)
 			}
 			titled_name := strings.Title(name)
 			if extra == "auto_increment" {
-				templateData.AutoInc = titled_name
+				templateData.AutoInc = name
 			}
 
 			if strings.Contains(typ, "enum") {

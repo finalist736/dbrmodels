@@ -1,12 +1,12 @@
 package main
 
 import (
-	"path/filepath"
-	"os/user"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/user"
+	"path/filepath"
 )
 
 type Project struct {
