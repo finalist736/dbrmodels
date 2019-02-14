@@ -12,36 +12,37 @@ import (
 const data = `package {{.PkgName}}
 {{if .DbrUsed}}import "github.com/gocraft/dbr"{{end}}
 
-var fieldsNames = []string{ {{.FieldsNames}} }
-{{if .AutoInc}}var auto_increment_field string = "{{.AutoInc}}"{{end}}
+var fieldsNames{{.Table}} = []string{ {{.FieldsNames}} }
+{{if .AutoInc}}var autoIncrementField{{.Table}} string = "{{.AutoInc}}"{{end}}
 
-type {{.Table}} struct {
+type DB{{.Table}} struct {
 	{{range .Fields}}{{.Name}}{{/*tab*/}} {{.Type}}{{/*tab*/}} {{.Tag}}
 	{{end}}
 }
 
-func New() *{{.Table}} {
-	return new({{.Table}})
+func NewDB{{.Table}}() *DB{{.Table}} {
+	return new(DB{{.Table}})
 }
 
-func NewSlice() []*{{.Table}} {
-	return make([]*{{.Table}}, 0)
+func NewSliceDB{{.Table}}() []*DB{{.Table}} {
+	return make([]*DB{{.Table}}, 0)
 }
 
-func FieldsNames() []string {
-	return fieldsNames
+func FieldsNames{{.Table}}() []string {
+	return fieldsNames{{.Table}}
 }
 {{if .AutoInc}}
-func FieldsNamesWithOutAI() []string {
+func FieldsNamesWithOutAI{{.Table}}() []string {
 	var slice []string
-	for _, iterator := range fieldsNames {
-		if iterator == auto_increment_field {
+	for _, iterator := range fieldsNames{{.Table}} {
+		if iterator == autoIncrementField{{.Table}} {
 			continue
 		}
 		slice = append(slice, iterator)
 	}
 	return slice
 }
+
 {{end}}
 `
 
@@ -60,7 +61,7 @@ type TplData struct {
 	DbrUsed     bool
 }
 
-func CreateTableModel(path, table string, db *sql.DB, verbose bool) {
+func CreateTableModel(path, table, projectname string, db *sql.DB, verbose bool) {
 	var (
 		name  string
 		typ   string
@@ -70,9 +71,9 @@ func CreateTableModel(path, table string, db *sql.DB, verbose bool) {
 		extra string
 	)
 
-	template_data := TplData{}
-	template_data.PkgName = table
-	template_data.Table = strings.Title(table)
+	templateData := TplData{}
+	templateData.PkgName = projectname
+	templateData.Table = strings.Title(table)
 
 	// get table columns info
 	q := fmt.Sprintf("SHOW COLUMNS FROM %s", table)
@@ -92,12 +93,12 @@ func CreateTableModel(path, table string, db *sql.DB, verbose bool) {
 			}
 			titled_name := strings.Title(name)
 			if extra == "auto_increment" {
-				template_data.AutoInc = titled_name
+				templateData.AutoInc = titled_name
 			}
 
 			if strings.Contains(typ, "enum") {
 				if null == "YES" {
-					template_data.DbrUsed = true
+					templateData.DbrUsed = true
 					typ = "dbr.NullString"
 				} else {
 					typ = "string"
@@ -105,14 +106,14 @@ func CreateTableModel(path, table string, db *sql.DB, verbose bool) {
 			}
 			if typ == "tinyint(1)" { // bool need be first because next `strings.Contains(typ, "int")`
 				if null == "YES" {
-					template_data.DbrUsed = true
+					templateData.DbrUsed = true
 					typ = "dbr.NullBool"
 				} else {
 					typ = "bool"
 				}
 			} else if strings.Contains(typ, "int") {
 				if null == "YES" {
-					template_data.DbrUsed = true
+					templateData.DbrUsed = true
 					typ = "dbr.NullInt64"
 				} else {
 					typ = "int64"
@@ -122,17 +123,17 @@ func CreateTableModel(path, table string, db *sql.DB, verbose bool) {
 				strings.Contains(typ, "double") ||
 				strings.Contains(typ, "real") {
 				if null == "YES" {
-					template_data.DbrUsed = true
+					templateData.DbrUsed = true
 					typ = "dbr.NullFloat64"
 				} else {
 					typ = "float64"
 				}
 			} else if strings.Contains(typ, "date") || strings.Contains(typ, "timestamp") {
-				template_data.DbrUsed = true
+				templateData.DbrUsed = true
 				typ = "dbr.NullTime"
 			} else {
 				if null == "YES" {
-					template_data.DbrUsed = true
+					templateData.DbrUsed = true
 					typ = "dbr.NullString"
 				} else {
 					typ = "string"
@@ -144,25 +145,25 @@ func CreateTableModel(path, table string, db *sql.DB, verbose bool) {
 				fmt.Printf("\t\t\t => %s %s %s\n", titled_name, typ, tag)
 			}
 			table_field := Field{titled_name, typ, tag}
-			template_data.Fields = append(template_data.Fields, table_field)
-			template_data.FieldsNames = fmt.Sprintf("%s, \"%s\"", template_data.FieldsNames, table_field.Name)
+			templateData.Fields = append(templateData.Fields, table_field)
+			templateData.FieldsNames = fmt.Sprintf("%s, \"%s\"", templateData.FieldsNames, name)
 		}
-		template_data.FieldsNames = strings.Trim(template_data.FieldsNames, ",")
+		templateData.FieldsNames = strings.Trim(templateData.FieldsNames, ",")
 	}
 	t := template.Must(template.New("struct").Parse(data))
 
-	fullPath := path + "/" + table
-	fullFileName := fullPath + "/model.go"
-	err := os.MkdirAll(fullPath, 0700)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "file creating error: %s", err)
-		return
-	}
+	//fullPath := path + "/" + table
+	fullFileName := path + "/db_" + table + ".go"
+	//	err := os.MkdirAll(fullPath, 0700)
+	//	if err != nil {
+	//		fmt.Fprintf(os.Stderr, "file creating error: %s", err)
+	//		return
+	//	}
 
 	file, err := os.Create(fullFileName)
 	defer file.Close()
 	if err == nil {
-		if err := t.Execute(file, template_data); err != nil {
+		if err := t.Execute(file, templateData); err != nil {
 			fmt.Fprintf(os.Stderr, "template executing: %s", err)
 			return
 		}

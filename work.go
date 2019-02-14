@@ -34,7 +34,7 @@ func DoWork(name string, verbose bool) {
 			if verbose {
 				fmt.Printf("\ngenerate `%s` table\n", tabl)
 			}
-			CreateTableModel(p.Path, tabl, db, verbose)
+			CreateTableModel(p.Path, tabl, p.Name, db, verbose)
 		}
 	}
 	defer db.Close()
