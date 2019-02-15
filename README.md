@@ -10,20 +10,20 @@ CREATE TABLE Persons
     FirstName   varchar(255),
     Address     varchar(255) DEFAULT NULL,
     City        varchar(255) DEFAULT NULL,
-	BirthDay 	date NOT NULL,
-	PRIMARY KEY (`PersonID`)
+    BirthDay 	date NOT NULL,
+    PRIMARY KEY (`PersonID`)
 );
 ```
 and generate gocraft/dbr model
 ```go
-package Persons
+package awesomeProject
 
 import "github.com/gocraft/dbr"
 
-var fieldsNames = []string{"PersonID", "LastName", "FirstName", "Address", "City"}
-var auto_increment_field string = "PersonID"
+var fieldsNamesPersons = []string{"PersonID", "LastName", "FirstName", "Address", "City"}
+var autoIncrementFieldPersons string = "PersonID"
 
-type Persons struct {
+type DBPersons struct {
 	PersonID  int64          `db:"PersonID"`
 	LastName  string         `db:"LastName"`
 	FirstName string         `db:"FirstName"`
@@ -32,24 +32,24 @@ type Persons struct {
 	BirthDay  dbr.NullTime   `db:"BirthDay"`
 }
 
-func New() *Persons {
-	return new(Persons)
+func NewDBPersons() *Persons {
+	return new(DBPersons)
 }
 
-func NewSlice() []*Persons {
-	return make([]*Persons, 0)
+func NewSliceDBPersons() []*Persons {
+	return make([]*DBPersons, 0)
 }
 
 // return fields names
-func FieldsNames() []string {
-	return fieldsNames
+func FieldsNamesPersons() []string {
+	return fieldsNamesPersons
 }
 
 // return fields names without auto_increment field for insert
-func FieldsNamesWithOutAI() []string {
+func FieldsNamesWithOutAIPersons() []string {
 	var slice []string
-	for _, iterator := range fieldsNames {
-		if iterator == auto_increment_field {
+	for _, iterator := range fieldsNamesPersons {
+		if iterator == autoIncrementFieldPersons {
 			continue
 		}
 		slice = append(slice, iterator)
@@ -73,11 +73,11 @@ go get github.com/finalist736/dbrmodels
 ## gocraft/dbr example
 ```go
 // Get a record
-var persons Persons.Persons
+var persons awesomeProject.DBPersons
 err := dbrSess.Select("*").From("Persons").Where("PersonID = ?", 1).Load(&persons)
 
 // insert record
-result, err := dbrSess.InsertInto("Persons").Columns(Persons.FieldsNamesWithOutAI()...).Record(&persons).Exec()
+result, err := dbrSess.InsertInto("Persons").Columns(awesomeProject.FieldsNamesWithOutAIPersons()...).Record(&persons).Exec()
 newAIID := result.LastInsertID()
 
 // update record
@@ -117,11 +117,8 @@ SHOW TABLES;
 converts into files:
 ```
 - /home/finalist/go/src/github.com/finalist736/persons_dates_project/
----- dbrmodels/
---------- Persons/
--------------- model.go
---------- TestDatesTable/
--------------- model.go
+---- db_persons.go
+---- db_TestDatesTable.go
 ```
 
 # Using
