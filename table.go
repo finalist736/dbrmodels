@@ -12,11 +12,13 @@ import (
 const data = `package {{.PkgName}}
 {{if .DbrUsed}}import "github.com/gocraft/dbr"{{end}}
 
+const TableName{{.Table}} = "{{.TableOrigin}}"
 var fieldsNames{{.Table}} = []string{ {{.FieldsNames}} }
-{{if .AutoInc}}var autoIncrementField{{.Table}} string = "{{.AutoInc}}"{{end}}
+{{if .AutoInc}}var autoIncrementField{{.Table}} = "{{.AutoInc}}"{{end}}
+
 
 type DB{{.Table}} struct {
-	{{range .Fields}}{{.Name}}{{/*tab*/}} {{.Type}}{{/*tab*/}} {{.Tag}}
+	{{range .Fields}}{{.Name}} {{.Type}} {{.Tag}}
 	{{end}}
 }
 
@@ -54,6 +56,7 @@ type Field struct {
 
 type TplData struct {
 	PkgName     string
+	TableOrigin string
 	Table       string
 	Fields      []Field
 	FieldsNames string
@@ -73,6 +76,7 @@ func CreateTableModel(path, table, projectname string, db *sql.DB, verbose bool)
 
 	templateData := TplData{}
 	templateData.PkgName = projectname
+	templateData.TableOrigin = table
 	templateData.Table = strings.Title(table)
 
 	// get table columns info
