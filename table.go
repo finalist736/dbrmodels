@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/serenize/snaker"
 	"os"
 	"os/exec"
 	"strings"
@@ -144,7 +145,7 @@ func CreateTableModel(path, table, projectname string, db *sql.DB, verbose bool)
 				}
 			}
 
-			tag := fmt.Sprintf("`db:\"%s\"`", name)
+			tag := fmt.Sprintf("`db:\"%s\" json:\"%s\"`", name, snaker.CamelToSnake(name))
 			if verbose {
 				fmt.Printf("\t\t\t => %s %s %s\n", titled_name, typ, tag)
 			}
